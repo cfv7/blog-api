@@ -1,0 +1,27 @@
+{
+  "name": "blog-api",
+  "version": "1.0.0",
+  "description": "blogging API using CRUD functions",
+  "main": "server.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cfv7/blog-api.git"
+  },
+  "keywords": [
+    "blog",
+    "api",
+    "crud"
+  ],
+  "author": "colin & ramon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cfv7/blog-api/issues"
+  },
+  "homepage": "https://github.com/cfv7/blog-api#readme"
+}
