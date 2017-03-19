@@ -7,71 +7,52 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const {BlogPosts} = require('./models');
+const blogRouter = require('./blogRouter');
 
 const jsonParser = bodyParser.json();
 const app = express();
 
 app.use(morgan('common'));
 
-BlogPosts.create('don quixote', 'spiritual desert journey', 'miguel de cervantes', 1605);
+app.use('/blog-post', blogRouter);
 
-console.log({BlogPosts});
+module.exports = app;
 
-app.get('/blog-post', (req, res) => {
-    res.json(BlogPosts.get());
-});
+let server;
 
-app.post('/blog-post', jsonParser, (req, res)=> {
-    const requireFields = ['title', 'content', 'author', 'publishDate'];
-    for(let i = 0; i<requireFields.length; i++){
-        const field = requireFields[i];
-        if(!(field in req.body)) {
-            const message = `Missing \`${field}\` in request body`
-            console.error(message);
-            return res.status(400).send(message);
-        }
-    }
-    const item = BlogPosts.create(
-        req.body.title, req.body.content, req.body.author, req.body.publishDate);
-        res.status(201).json(item); 
-});
-
-app.delete('/blog-post/:id', (req,res)=> {
-    BlogPosts.delete(req.params.id);
-    console.log(`Deleted blog-post \`${req.params.id}\``);
-    res.status(204).end();
-});
-
-app.put('/blog-post/:id', jsonParser, (req, res) => {
-    const requireFields = ['title', 'content', 'author', 'publishDate'];
-    for (let i = 0; i<requireFields.length; i++){
-        const field = requireFields[i];
-        if (!(field in req.body)){
-            const message = `Missing \`${field}\` in request body`
-            console.error(message);
-            return res.status(400).send(message);
-        }
-    }
-    if (req.params.id !== req.body.id){
-        const message = (
-            `Request path id (${req.params.id}) and request body id `
-            `(${req.body.id}) must match`);
-        console.error(message);
-        return res.status(400).send(message);
-    }
-    console.log(`Updating blog post item \`${req.params.id}\``);
-    const updatedItem = BlogPosts.update({
-        id: req.params.id,
-        title: req.body.title,
-        content: req.body.content,
-        author: req.body.author,
-        publishDate: req.body.publishDate
+function runServer() {
+  const port = process.env.PORT || 8080;
+  return new Promise((resolve, reject) => {
+    server = app.listen(port, () => {
+      console.log(`Your app is listening on port ${port}`);
+      resolve(server);
+    }).on('error', err => {
+      reject(err)
     });
-    res.status(200).json(updatedItem);
-});
+  });
+}
+function closeServer() {
+  return new Promise((resolve, reject) => {
+    console.log('Closing server');
+    server.close(err => {
+      if (err) {
+        reject(err);
+        // so we don't also call `resolve()`
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
+if (require.main === module) {
+  runServer().catch(err => console.error(err));
+};
+
+module.exports = {app, runServer, closeServer};
 
 
+// app.listen(process.env.PORT || 8080, () => {
+//   console.log(`Your app is listening on port ${process.env.PORT || 8080}`);
+// });
 
-app.listen(process.env.PORT || 8080, () => {
-  console.log(`Your app is listening on port ${process.env.PORT || 8080}`);
-});
